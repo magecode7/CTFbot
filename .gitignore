@@ -1,3 +1,5 @@
 bot.log
 bot.db
 config.ini
+__pycache__
+.vscode
