@@ -44,7 +44,7 @@ def create_tables():
     conn.commit()
 
 
-def get_user(user_id: int) -> tuple[int, str, bool, int]:
+def get_user(user_id: int) -> tuple:
     """Возвращает данные пользователя (id, name, admin, selected_task_id)"""
 
     cur.execute("SELECT * FROM users WHERE id = ?", (user_id, ))
@@ -52,7 +52,7 @@ def get_user(user_id: int) -> tuple[int, str, bool, int]:
     return cur.fetchone()
 
 
-def get_task(task_id: int) -> tuple[int, int, str, str, str, int, bool]:
+def get_task(task_id: int) -> tuple:
     """Возвращает данные задания (id, owner_user_id, name, description, flag, points, visible)"""
 
     cur.execute("SELECT * FROM tasks  WHERE id = ?", (task_id, ))
@@ -71,7 +71,7 @@ def get_task_solved(user_id: int, task_id: int) -> bool:
 
     cur.execute(
         "SELECT * FROM solves WHERE user_id = ? AND task_id = ?", (user_id, task_id))
-    return cur.fetchone() is None
+    return cur.fetchone() is not None
 
 
 def get_selected_task_id(user_id: int) -> int:
@@ -119,21 +119,21 @@ def delete_task(task_id: int):
     conn.commit()
 
 
-def get_tasks() -> list[tuple[int, int, str, str, str, int, bool]]:
+def get_tasks() -> list:
     """Возвращает данные заданий (id, owner_user_id, name, description, flag, points, visible)"""
 
     cur.execute("SELECT * FROM tasks")
     return cur.fetchall()
 
 
-def get_users() -> list[tuple[int, str, int, bool, int]]:
+def get_users() -> list:
     """Возвращает данные пользователей (id, name, points, admin, selected_task_id)"""
 
     cur.execute("SELECT * FROM users")
     return cur.fetchall()
 
 
-def get_scoreboard() -> list[tuple[str, int]]:
+def get_scoreboard() -> list:
     """Возвращает рейтинг пользователей"""
 
     cur.execute("SELECT users.name, SUM(tasks.points) AS score FROM solves JOIN users ON users.id = solves.user_id JOIN tasks ON tasks.id = solves.task_id GROUP BY users.name ORDER BY score DESC")
@@ -144,7 +144,7 @@ def get_user_score(user_id: int) -> int:
     """Возвращает очки пользователя"""
 
     cur.execute("SELECT SUM(tasks.points) AS score FROM solves JOIN tasks ON tasks.id = solves.task_id WHERE solves.user_id = ?", (user_id, ))
-    return int(cur.fetchone()[0])
+    return int(cur.fetchone()[0] or 0)
 
 
 def set_task_name(task_id: int, name: str):

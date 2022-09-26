@@ -1,3 +1,4 @@
+from email import message
 import logging
 import configparser
 import random
@@ -98,7 +99,7 @@ async def handle_task_show(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
 
     keyboard_enter_flag = types.InlineKeyboardMarkup()
-    keyboard_enter_flag.add(types.InlineKeyboardButton(
+    if not database.get_task_solved(callback_query.from_user.id, task_id): keyboard_enter_flag.add(types.InlineKeyboardButton(
         ui.but_enter_flag, callback_data=f'flagenter_{task_id}'))
 
     if task:
