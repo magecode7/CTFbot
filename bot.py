@@ -38,6 +38,8 @@ bot = Bot(token=config['BOT']['TOKEN'])
 dp = Dispatcher(bot, storage=storage)
 # База данных бота
 database.create_tables()
+if not database.get_user(config['BOT']['ADMIN']):
+    database.add_user(config['BOT']['ADMIN'], 'admin', True)
 
 
 # Хэндлер запуска
@@ -45,7 +47,7 @@ database.create_tables()
 async def cmd_start(message: types.Message, state: FSMContext):
     await state.finish()
     await dp.bot.set_my_commands(ui.commands)  # Установка комманд
-    user = database.find_user(message.from_user.id)
+    user = database.get_user(message.from_user.id)
     if user is None:  # Проверка на регистрацию в боте
         database.add_user(message.from_user.id, message.from_user.full_name)
         await message.answer(ui.text_start_user_new.format(message.from_user.full_name), reply_markup=ui.keyboard_main)
@@ -53,11 +55,23 @@ async def cmd_start(message: types.Message, state: FSMContext):
         await message.answer(ui.text_start_user.format(message.from_user.full_name), reply_markup=ui.keyboard_main)
 
 
+# Возвращение назад
+@dp.message_handler(Text(equals=ui.but_back), state=UserStates.all_states)
+async def back_to_menu(message: types.Message, state: FSMContext):
+    await state.finish()
+
+    await message.answer(ui.text_back, reply_markup=ui.keyboard_main)
+
+
 # Показ профиля
 @dp.message_handler(Text(equals=ui.but_profile))
 async def show_profile(message: types.Message):
-    user = database.find_user(message.from_user.id)
-    await message.answer(ui.text_profile.format(user[0], user[1], user[2]), reply_markup=ui.keyboard_main)
+    user = database.get_user(message.from_user.id)
+
+    if user:
+        await message.answer(ui.text_profile.format(user[0], user[1], database.get_user_score(message.from_user.id)), reply_markup=ui.keyboard_main)
+    else:
+        await message.answer(ui.text_user_missed)
 
 
 # Показ заданий
@@ -67,8 +81,10 @@ async def show_tasks(message: types.Message):
 
     inline_tasks = InlineKeyboardMarkup()
     for task in tasks:
-        inline_tasks.insert(
-            InlineKeyboardButton(ui.text_tasks_line.format(task[1], task[2]), callback_data=f'taskshow_{task[0]}'))
+        visible = task[6]
+        if visible:
+            inline_tasks.insert(InlineKeyboardButton(ui.text_tasks_line.format(
+                task[2], task[5]), callback_data=f'taskshow_{task[0]}'))
 
     await message.answer(ui.text_tasks, reply_markup=inline_tasks)
 
@@ -77,12 +93,13 @@ async def show_tasks(message: types.Message):
 @dp.callback_query_handler(Text(startswith='taskshow'))
 async def handle_task_show(callback_query: types.CallbackQuery):
     task_id = int(callback_query.data.split('_')[1])
-    task = database.find_task(task_id)
+    task = database.get_task(task_id)
 
     await bot.answer_callback_query(callback_query.id)
 
     keyboard_enter_flag = types.InlineKeyboardMarkup()
-    keyboard_enter_flag.add(types.InlineKeyboardButton(ui.but_enter_flag, callback_data=f'flagenter_{task_id}'))
+    keyboard_enter_flag.add(types.InlineKeyboardButton(
+        ui.but_enter_flag, callback_data=f'flagenter_{task_id}'))
 
     if task:
         await bot.send_message(callback_query.from_user.id, ui.text_task.format(task[2], task[5], task[3]),
@@ -96,7 +113,7 @@ async def handle_flag_enter(callback_query: types.CallbackQuery):
 
     task_id = int(callback_query.data.split('_')[1])
 
-    database.set_edit_task(callback_query.from_user.id, task_id)
+    database.set_selected_task(callback_query.from_user.id, task_id)
 
     await bot.send_message(callback_query.from_user.id, ui.text_enter_flag)
 
@@ -106,36 +123,37 @@ async def handle_flag_enter(callback_query: types.CallbackQuery):
 async def enter_edit_task_name(message: types.Message, state: FSMContext):
     await state.finish()
 
-    user = database.get_user_task_id(message.from_user.id)
+    task_id = database.get_selected_task_id(message.from_user.id)
 
-    flag = database.find_task_flag(user)
+    flag = database.get_task_flag(task_id)
 
     if message.text == flag:
+        database.add_solve(message.from_user.id, task_id)
+
         await message.answer(ui.text_flag_correct)
     else:
         await message.answer(ui.text_flag_incorrect)
 
 
-# Отмена
-@dp.message_handler(Text(equals=ui.but_cancel),
-                    state=[UserStates.edit_name, UserStates.edit_desc, UserStates.edit_flag, UserStates.edit_points])
-async def cancel_action(message: types.Message):
-    await UserStates.edit.set()
+# Хэндлер показа рейтинга
+@dp.message_handler(Text(equals=ui.but_scoreboard))
+async def show_scoreboard(message: types.Message):
+    scoreboard = database.get_scoreboard()
 
-    await message.answer(ui.text_cancel, reply_markup=ui.keyboard_admin)
+    text = ui.text_scoreboard
+    pos = 0
+    for score in scoreboard:
+        pos += 1
+        text += ui.text_scoreboard_line.format(position=pos, name=score[0], score=score[1])
 
-
-# Возвращение назад
-@dp.message_handler(Text(equals=ui.but_back), state=UserStates.all_states)
-async def back_to_menu(message: types.Message, state: FSMContext):
-    await state.finish()
-
-    await message.answer(ui.text_back, reply_markup=ui.keyboard_main)
+    await message.answer(text)
 
 
 # Админ панель
-@dp.message_handler(Text(equals=ui.but_admin))
+@dp.message_handler(commands='admin')
 async def show_admin_panel(message: types.Message):
+    if not database.get_user_admin(message.from_user.id): return
+
     await UserStates.admin.set()
 
     await message.answer(ui.text_admin_panel, reply_markup=ui.keyboard_admin)
@@ -159,43 +177,48 @@ async def enter_new_task(message: types.Message):
     await message.answer(ui.text_task_added, reply_markup=ui.keyboard_admin)
 
 
-# Изменить задание
+# Показ изменяемых заданий
 @dp.message_handler(Text(equals=ui.but_edit_task), state=UserStates.admin)
 async def show_edit_tasks(message: types.Message):
     await UserStates.edit_enter.set()
 
     tasks = database.get_tasks()
-    text = ui.text_tasks
+
+    inline_tasks = InlineKeyboardMarkup()
     for task in tasks:
-        text += ui.text_edit_tasks_line.format(task[0], task[1])
+        inline_tasks.insert(InlineKeyboardButton(ui.text_tasks_line.format(
+            task[2], task[5]), callback_data=f'taskedit_{task[0]}'))
 
-    text += ui.text_edit_tasks
-
-    await message.answer(text, reply_markup=ui.keyboard_admin)
+    await message.answer(ui.text_tasks, reply_markup=inline_tasks)
 
 
 # Показ изменяемого задания
-async def show_edit_task(message: types.Message):
-    text = ui.text_edit_task_entered.format(database.get_user_task_id(message.from_user.id))
-    task = database.find_task(database.get_user_task_id(message.from_user.id))
-    text += ui.text_task_full.format(task[2], task[5], task[3], task[4], task[1], bool(task[6]))
+async def show_edit_task(user_id: int):
+    text = ui.text_edit_task_entered.format(
+        database.get_selected_task_id(user_id))
+    task = database.get_task(database.get_selected_task_id(user_id))
+    text += ui.text_task_full.format(task[2],
+                                     task[5], task[3], task[4], task[1], bool(task[6]))
 
-    await message.answer(text, reply_markup=ui.keyboard_edit_task)
+    await bot.send_message(user_id, text, reply_markup=ui.keyboard_edit_task)
 
 
 # Хэндлер ввода изменения задания
-@dp.message_handler(state=UserStates.edit_enter)
-async def enter_edit_task(message: types.Message):
-    task = database.find_task(message.text)
+@dp.callback_query_handler(Text(startswith='taskedit'), state=UserStates.edit_enter)
+async def handle_task_edit(callback_query: types.CallbackQuery):
+    task_id = int(callback_query.data.split('_')[1])
+    task = database.get_task(task_id)
+
+    await bot.answer_callback_query(callback_query.id)
 
     if task:
         await UserStates.edit.set()
 
-        database.set_edit_task(message.from_user.id, message.text)
+        database.set_selected_task(callback_query.from_user.id, task_id)
 
-        await show_edit_task(message)
+        await show_edit_task(callback_query.from_user.id)
     else:
-        await message.answer(ui.text_edit_task_notentered.format(message.text), reply_markup=ui.keyboard_back)
+        await bot.send_message(callback_query.from_user.id, ui.text_edit_task_notentered, reply_markup=ui.keyboard_back)
 
 
 # Показ ввода изменения названия задания
@@ -211,9 +234,10 @@ async def show_edit_task_name(message: types.Message):
 async def enter_edit_task_name(message: types.Message):
     await UserStates.edit.set()
 
-    database.edit_task_name(database.get_user_task_id(message.from_user.id), message.text)
+    database.set_task_name(database.get_selected_task_id(
+        message.from_user.id), message.text)
 
-    await show_edit_task(message)
+    await show_edit_task(message.from_user.id)
 
 
 # Показ ввода изменения описания задания
@@ -229,9 +253,10 @@ async def show_edit_task_desc(message: types.Message):
 async def enter_edit_task_name(message: types.Message):
     await UserStates.edit.set()
 
-    database.edit_task_desc(database.get_user_task_id(message.from_user.id), message.text)
+    database.set_task_desc(database.get_selected_task_id(
+        message.from_user.id), message.text)
 
-    await show_edit_task(message)
+    await show_edit_task(message.from_user.id)
 
 
 # Показ ввода изменения флага задания
@@ -247,9 +272,10 @@ async def show_edit_task_flag(message: types.Message):
 async def enter_edit_task_flag(message: types.Message):
     await UserStates.edit.set()
 
-    database.edit_task_flag(database.get_user_task_id(message.from_user.id), message.text)
+    database.set_task_flag(database.get_selected_task_id(
+        message.from_user.id), message.text)
 
-    await show_edit_task(message)
+    await show_edit_task(message.from_user.id)
 
 
 # Показ ввода изменения очков задания
@@ -260,14 +286,27 @@ async def show_edit_task_points(message: types.Message):
     await message.answer(ui.text_edit_points, reply_markup=ui.keyboard_back)
 
 
+# Изменение видимости задания
+@dp.message_handler(Text(equals=ui.but_edit_visible), state=UserStates.edit)
+async def show_edit_task_points(message: types.Message):
+    selected_task_id = database.get_selected_task_id(message.from_user.id)
+
+    task = database.get_task(selected_task_id)
+
+    database.set_task_visibility(selected_task_id, not task[6])
+
+    await show_edit_task(message.from_user.id)
+
+
 # Хэндлер ввода изменения очков задания
 @dp.message_handler(state=UserStates.edit_points)
 async def enter_edit_task_points(message: types.Message):
     await UserStates.edit.set()
 
-    database.edit_task_points(database.get_user_task_id(message.from_user.id), message.text)
+    database.set_task_points(database.get_selected_task_id(
+        message.from_user.id), message.text)
 
-    await show_edit_task(message)
+    await show_edit_task(message.from_user.id)
 
 
 # Удалить задание
@@ -275,7 +314,7 @@ async def enter_edit_task_points(message: types.Message):
 async def show_delete_task(message: types.Message):
     await UserStates.admin.set()
 
-    database.delete_task(database.get_user_task_id(message.from_user.id))
+    database.delete_task(database.get_selected_task_id(message.from_user.id))
 
     await message.answer(ui.text_task_deleted, reply_markup=ui.keyboard_admin)
 
