@@ -1,5 +1,4 @@
 import sqlite3
-from turtle import right
 
 conn = sqlite3.connect("bot.db")
 conn.row_factory = sqlite3.Row

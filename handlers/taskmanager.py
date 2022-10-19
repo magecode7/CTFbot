@@ -59,6 +59,10 @@ async def show_edit_task_name(message: types.Message):
 # Перехватчик ввода изменения названия задания
 @dp.message_handler(state=UserStates.task_edit_name)
 async def enter_edit_task_name(message: types.Message):
+    if len(message.text) > 16:
+        await message.answer(ui.TEXT_TASK_NAME_EDIT_OUTBOUND)
+        return
+
     database.set_task_name(database.get_selected_task_id(message.from_user.id), message.text)
     
     await UserStates.task_edit.set()
@@ -77,6 +81,10 @@ async def show_edit_task_desc(message: types.Message):
 # Перехватчик ввода изменения описания задания
 @dp.message_handler(state=UserStates.task_edit_desc)
 async def enter_edit_task_desc(message: types.Message):
+    if len(message.text) > 256:
+        await message.answer(ui.TEXT_TASK_DESC_EDIT_OUTBOUND)
+        return
+
     database.set_task_desc(database.get_selected_task_id(message.from_user.id), message.text)
     
     await UserStates.task_edit.set()
@@ -95,6 +103,10 @@ async def show_edit_task_flag(message: types.Message):
 # Перехватчик ввода изменения флага задания
 @dp.message_handler(state=UserStates.task_edit_flag)
 async def enter_edit_task_flag(message: types.Message):
+    if len(message.text) > 32:
+        await message.answer(ui.TEXT_TASK_FLAG_EDIT_OUTBOUND)
+        return
+
     database.set_task_flag(database.get_selected_task_id(message.from_user.id), message.text)
     
     await UserStates.task_edit.set()
@@ -116,6 +128,10 @@ async def enter_edit_task_points(message: types.Message):
     try:
         points = int(message.text)
 
+        if points < 0 or points > 1000:
+            await message.answer(ui.TEXT_TASK_POINTS_EDIT_OUTBOUND)
+            return
+
         database.set_task_points(database.get_selected_task_id(message.from_user.id), points)
     
         await UserStates.task_edit.set()
@@ -124,7 +140,6 @@ async def enter_edit_task_points(message: types.Message):
     except Exception as e:
         await message.answer(ui.TEXT_TASK_POINTS_EDIT_ERROR)
     
-
 
 # Изменение видимости задания
 @dp.message_handler(Text(equals=ui.BUT_TASK_VISIBILITY_EDIT), state=UserStates.task_edit)
@@ -151,6 +166,12 @@ async def show_delete_task(message: types.Message):
 # Добавить файл к заданию
 @dp.message_handler(Text(equals=ui.BUT_TASK_FILE_ADD), state=UserStates.task_edit)
 async def file_add(message: types.Message):
+    files = database.get_files(database.get_selected_task_id(message.from_user.id))
+
+    if len(files) >= 5:
+        await message.answer(ui.TEXT_TASK_FILE_ADD_UNBOUND)
+        return
+
     await UserStates.task_file_add.set()
 
     await message.answer(ui.TEXT_TASK_FILE_ADD, reply_markup=ui.keyboard_back)

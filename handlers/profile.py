@@ -32,6 +32,10 @@ async def handle_profile_change_name(callback_query: types.CallbackQuery):
 # Хэндлер ввода нового имени
 @dp.message_handler(state=UserStates.user_change_name)
 async def enter_edit_task_name(message: types.Message, state: FSMContext):
+    if len(message.text) > 16:
+        await message.answer(ui.TEXT_USER_NAME_CHANGE_OUTBOUND)
+        return
+
     await state.finish()
 
     database.set_user_name(message.from_user.id, message.text)
