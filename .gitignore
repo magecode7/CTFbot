@@ -3,3 +3,4 @@ bot.db
 config.py
 __pycache__
 .vscode
+.venv

@@ -1,8 +1,7 @@
-from bot import dp, bot, UserStates
+from bot import dp
 import database
 import ui
 from aiogram import types
-from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 
 

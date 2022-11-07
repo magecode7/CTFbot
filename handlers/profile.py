@@ -1,9 +1,10 @@
-from bot import dp, bot, UserStates
+from bot import dp, bot, BotStates
 import database
 import ui
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
+
 
 # Показ профиля
 @dp.message_handler(commands='profile')
@@ -23,14 +24,14 @@ async def show_profile(message: types.Message):
 # Хендлер изменения имени
 @dp.callback_query_handler(Text(startswith='changename'))
 async def handle_profile_change_name(callback_query: types.CallbackQuery):
-    await UserStates.user_change_name.set()
+    await BotStates.user_change_name.set()
 
     await callback_query.answer()
     await bot.send_message(callback_query.from_user.id, ui.TEXT_USER_NAME_CHANGE, reply_markup=types.ReplyKeyboardRemove())
 
 
 # Хэндлер ввода нового имени
-@dp.message_handler(state=UserStates.user_change_name)
+@dp.message_handler(state=BotStates.user_change_name)
 async def enter_edit_task_name(message: types.Message, state: FSMContext):
     if len(message.text) > 16:
         await message.answer(ui.TEXT_USER_NAME_CHANGE_OUTBOUND)

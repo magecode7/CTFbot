@@ -1,3 +1,4 @@
+import handlers.menu
 import handlers.tasks
 import handlers.profile
 import handlers.scoreboard

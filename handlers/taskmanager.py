@@ -1,5 +1,4 @@
-from email import message
-from bot import dp, bot, UserStates
+from bot import dp, bot, BotStates
 import database
 import ui
 from aiogram import types
@@ -27,7 +26,7 @@ async def show_editable_task(user_id: int):
 
 
 # Хэндлер ввода изменения задания
-@dp.callback_query_handler(Text(startswith='taskedit'), state=UserStates.admin)
+@dp.callback_query_handler(Text(startswith='taskedit'), min_rights=1)
 async def task_edit_handle(callback_query: types.CallbackQuery):
     task_id = int(callback_query.data.split('_')[1])
     task = database.get_task(task_id)
@@ -41,45 +40,43 @@ async def task_edit_handle(callback_query: types.CallbackQuery):
     if task:
         database.set_selected_task(callback_query.from_user.id, task_id)
 
-        await UserStates.task_edit.set()
-        
         await show_editable_task(callback_query.from_user.id)
     else:
         await bot.send_message(callback_query.from_user.id, ui.TEXT_TASK_MISSED, reply_markup=ui.keyboard_back)
 
 
 # Показ ввода изменения названия задания
-@dp.message_handler(Text(equals=ui.BUT_TASK_NAME_EDIT), state=UserStates.task_edit)
+@dp.message_handler(Text(equals=ui.BUT_TASK_NAME_EDIT), min_rights=1)
 async def show_edit_task_name(message: types.Message):
-    await UserStates.task_edit_name.set()
+    await BotStates.task_edit_name.set()
 
     await message.answer(ui.TEXT_TASK_NAME_EDIT, reply_markup=ui.keyboard_back)
 
 
 # Перехватчик ввода изменения названия задания
-@dp.message_handler(state=UserStates.task_edit_name)
-async def enter_edit_task_name(message: types.Message):
+@dp.message_handler(state=BotStates.task_edit_name, min_rights=1)
+async def enter_edit_task_name(message: types.Message, state: FSMContext):
     if len(message.text) > 16:
         await message.answer(ui.TEXT_TASK_NAME_EDIT_OUTBOUND)
         return
 
     database.set_task_name(database.get_selected_task_id(message.from_user.id), message.text)
     
-    await UserStates.task_edit.set()
+    await state.finish()
 
     await show_editable_task(message.from_user.id)
 
 
 # Показ ввода изменения описания задания
-@dp.message_handler(Text(equals=ui.BUT_TASK_DESC_EDIT), state=UserStates.task_edit)
+@dp.message_handler(Text(equals=ui.BUT_TASK_DESC_EDIT), state=BotStates.task_edit)
 async def show_edit_task_desc(message: types.Message):
-    await UserStates.task_edit_desc.set()
+    await BotStates.task_edit_desc.set()
 
     await message.answer(ui.TEXT_TASK_DESC_EDIT, reply_markup=ui.keyboard_back)
 
 
 # Перехватчик ввода изменения описания задания
-@dp.message_handler(state=UserStates.task_edit_desc)
+@dp.message_handler(state=BotStates.task_edit_desc)
 async def enter_edit_task_desc(message: types.Message):
     if len(message.text) > 256:
         await message.answer(ui.TEXT_TASK_DESC_EDIT_OUTBOUND)
@@ -87,21 +84,21 @@ async def enter_edit_task_desc(message: types.Message):
 
     database.set_task_desc(database.get_selected_task_id(message.from_user.id), message.text)
     
-    await UserStates.task_edit.set()
+    await BotStates.task_edit.set()
 
     await show_editable_task(message.from_user.id)
 
 
 # Показ ввода изменения флага задания
-@dp.message_handler(Text(equals=ui.BUT_TASK_FLAG_EDIT), state=UserStates.task_edit)
+@dp.message_handler(Text(equals=ui.BUT_TASK_FLAG_EDIT), state=BotStates.task_edit)
 async def show_edit_task_flag(message: types.Message):
-    await UserStates.task_edit_flag.set()
+    await BotStates.task_edit_flag.set()
 
     await message.answer(ui.TEXT_TASK_FLAG_EDIT, reply_markup=ui.keyboard_back)
 
 
 # Перехватчик ввода изменения флага задания
-@dp.message_handler(state=UserStates.task_edit_flag)
+@dp.message_handler(state=BotStates.task_edit_flag)
 async def enter_edit_task_flag(message: types.Message):
     if len(message.text) > 32:
         await message.answer(ui.TEXT_TASK_FLAG_EDIT_OUTBOUND)
@@ -109,21 +106,21 @@ async def enter_edit_task_flag(message: types.Message):
 
     database.set_task_flag(database.get_selected_task_id(message.from_user.id), message.text)
     
-    await UserStates.task_edit.set()
+    await BotStates.task_edit.set()
 
     await show_editable_task(message.from_user.id)
 
 
 # Показ ввода изменения очков задания
-@dp.message_handler(Text(equals=ui.BUT_TASK_POINTS_EDIT), state=UserStates.task_edit)
+@dp.message_handler(Text(equals=ui.BUT_TASK_POINTS_EDIT), state=BotStates.task_edit)
 async def show_edit_task_points(message: types.Message):
-    await UserStates.task_edit_points.set()
+    await BotStates.task_edit_points.set()
 
     await message.answer(ui.TEXT_TASK_POINTS_EDIT, reply_markup=ui.keyboard_back)
 
 
 # Перехватчик ввода изменения очков задания
-@dp.message_handler(state=UserStates.task_edit_points)
+@dp.message_handler(state=BotStates.task_edit_points)
 async def enter_edit_task_points(message: types.Message):
     try:
         points = int(message.text)
@@ -134,7 +131,7 @@ async def enter_edit_task_points(message: types.Message):
 
         database.set_task_points(database.get_selected_task_id(message.from_user.id), points)
     
-        await UserStates.task_edit.set()
+        await BotStates.task_edit.set()
 
         await show_editable_task(message.from_user.id)
     except Exception as e:
@@ -142,7 +139,7 @@ async def enter_edit_task_points(message: types.Message):
     
 
 # Изменение видимости задания
-@dp.message_handler(Text(equals=ui.BUT_TASK_VISIBILITY_EDIT), state=UserStates.task_edit)
+@dp.message_handler(Text(equals=ui.BUT_TASK_VISIBILITY_EDIT), state=BotStates.task_edit)
 async def show_edit_task_visibile(message: types.Message):
     selected_task_id = database.get_selected_task_id(message.from_user.id)
 
@@ -154,17 +151,17 @@ async def show_edit_task_visibile(message: types.Message):
 
 
 # Удалить задание
-@dp.message_handler(Text(equals=ui.BUT_TASK_DELETE), state=UserStates.task_edit)
+@dp.message_handler(Text(equals=ui.BUT_TASK_DELETE), state=BotStates.task_edit)
 async def show_delete_task(message: types.Message):
     database.delete_task(database.get_selected_task_id(message.from_user.id))
     
-    await UserStates.admin.set()
+    await BotStates.admin.set()
 
     await message.answer(ui.TEXT_TASK_DELETED, reply_markup=ui.keyboard_admin)
 
 
 # Добавить файл к заданию
-@dp.message_handler(Text(equals=ui.BUT_TASK_FILE_ADD), state=UserStates.task_edit)
+@dp.message_handler(Text(equals=ui.BUT_TASK_FILE_ADD), state=BotStates.task_edit)
 async def file_add(message: types.Message):
     files = database.get_files(database.get_selected_task_id(message.from_user.id))
 
@@ -172,17 +169,17 @@ async def file_add(message: types.Message):
         await message.answer(ui.TEXT_TASK_FILE_ADD_UNBOUND)
         return
 
-    await UserStates.task_file_add.set()
+    await BotStates.task_file_add.set()
 
     await message.answer(ui.TEXT_TASK_FILE_ADD, reply_markup=ui.keyboard_back)
 
 
 # Перехватчик файла
-@dp.message_handler(content_types=types.ContentType.DOCUMENT, state=UserStates.task_file_add)
+@dp.message_handler(content_types=types.ContentType.DOCUMENT, state=BotStates.task_file_add)
 async def file_handle(message: types.Message):
     database.add_file(database.get_selected_task_id(message.from_user.id), message.document.file_id,  message.document.file_name)
     
-    await UserStates.task_edit.set()
+    await BotStates.task_edit.set()
 
     await message.answer(ui.TEXT_TASK_FILE_ADDED)
 
@@ -190,7 +187,7 @@ async def file_handle(message: types.Message):
 
 
 # Удаление файлов
-@dp.message_handler(Text(equals=ui.BUT_TASK_FILE_DELETE), state=UserStates.task_edit)
+@dp.message_handler(Text(equals=ui.BUT_TASK_FILE_DELETE), state=BotStates.task_edit)
 async def file_delete(message: types.Message):
     task_id = database.get_selected_task_id(message.from_user.id)
 
@@ -198,13 +195,13 @@ async def file_delete(message: types.Message):
     
     inline_files = types.InlineKeyboardMarkup()
     for file in files:
-        inline_files.add(types.InlineKeyboardButton(file['path'], callback_data=f"filedelete_{file['id']}_{task_id}"))
+        inline_files.add(types.InlineKeyboardButton(file['name'], callback_data=f"filedelete_{file['id']}_{task_id}"))
 
     await message.answer(ui.TEXT_TASK_FILES_DELETE, reply_markup=inline_files)
 
 
 # Перехват удаления файла
-@dp.callback_query_handler(Text(startswith='filedelete'), state=UserStates.task_edit)
+@dp.callback_query_handler(Text(startswith='filedelete'), state=BotStates.task_edit)
 async def handle_file_delete(callback_query: types.CallbackQuery):
     file_id = int(callback_query.data.split('_')[1])
     task_id = int(callback_query.data.split('_')[2])
@@ -215,7 +212,7 @@ async def handle_file_delete(callback_query: types.CallbackQuery):
 
     inline_files = types.InlineKeyboardMarkup()
     for file in files:
-        inline_files.add(types.InlineKeyboardButton(file[3], callback_data=f"filedelete_{file['id']}_{task_id}"))
+        inline_files.add(types.InlineKeyboardButton(file['name'], callback_data=f"filedelete_{file['id']}_{task_id}"))
 
     await callback_query.answer()
     if files:
@@ -227,7 +224,7 @@ async def handle_file_delete(callback_query: types.CallbackQuery):
 
 
 # Сбросить решения задания
-@dp.message_handler(Text(equals=ui.BUT_TASK_RESET), state=UserStates.task_edit)
+@dp.message_handler(Text(equals=ui.BUT_TASK_RESET), state=BotStates.task_edit)
 async def task_reset_solves(message: types.Message):
     database.reset_task(database.get_selected_task_id(message.from_user.id))
 

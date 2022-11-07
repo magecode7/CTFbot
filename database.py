@@ -1,4 +1,8 @@
+from datetime import datetime
 import sqlite3
+
+# Формат даты ввода и вывода
+DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 conn = sqlite3.connect("bot.db")
 conn.row_factory = sqlite3.Row
@@ -44,6 +48,12 @@ def create_tables():
         path TEXT NOT NULL,
         name TEXT NOT NULL,
         FOREIGN KEY (task_id) REFERENCES tasks (id)
+    )""")
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS config(
+        id INTEGER PRIMARY KEY,
+        start_date TIMESTAMP,
+        end_date TIMESTAMP
     )""")
     conn.commit()
 
@@ -276,6 +286,53 @@ def set_user_block(user_id: int, blocked: bool):
 
     cur.execute("UPDATE users SET blocked = ? WHERE id = ?", (blocked, user_id))
     conn.commit()
+
+
+def send_query(query: str):
+    """Универсальный и опасный доступ запросами"""
+
+    cur.execute(query)
+    conn.commit()
+
+
+def reset_competitions():
+    """Сбрасывает решения и задания из БД"""
+
+    cur.execute("DELETE FROM solves")
+    cur.execute("DELETE FROM tasks")
+    conn.commit()
+
+
+def set_start_time(date: datetime):
+    """Установить дату начала"""
+    
+    cur.execute("INSERT OR REPLACE INTO config (id, start_date) VALUES (1, ?)", (date, ))
+    conn.commit()
+
+
+def get_start_time() -> datetime:
+    """Получить дату начала"""
+
+    cur.execute("SELECT start_date FROM config")
+    date = cur.fetchone()[0]
+    if date:
+        return datetime.strptime(date, DATETIME_FORMAT)
+    else:
+        return datetime.now()
+
+
+def set_end_time(date: datetime):
+    """Установить дату окончания"""
+
+    cur.execute("INSERT OR REPLACE INTO config (id, end_date) VALUES (1, ?)", (date, ))
+    conn.commit()
+
+
+def get_end_time() -> datetime:
+    """Получить дату окончания"""
+
+    cur.execute("SELECT end_date FROM config")
+    return datetime.strptime(cur.fetchone()[0], DATETIME_FORMAT)
 
 
 if __name__ == "__main__":

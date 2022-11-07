@@ -1,4 +1,4 @@
-from bot import dp, bot, UserStates
+from bot import dp, bot, BotStates
 import database
 import ui
 from aiogram import types
@@ -63,7 +63,7 @@ async def handle_flag(callback_query: types.CallbackQuery):
 # Хендлер начала ввода флага
 @dp.callback_query_handler(Text(startswith='flagenter'))
 async def handle_flag_enter(callback_query: types.CallbackQuery):
-    await UserStates.task_flag_enter.set()
+    await BotStates.task_flag_enter.set()
 
     task_id = int(callback_query.data.split('_')[1])
 
@@ -74,7 +74,7 @@ async def handle_flag_enter(callback_query: types.CallbackQuery):
 
 
 # Хэндлер ввода флага
-@dp.message_handler(state=UserStates.task_flag_enter)
+@dp.message_handler(state=BotStates.task_flag_enter)
 async def enter_edit_task_name(message: types.Message, state: FSMContext):
     await state.finish()
 

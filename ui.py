@@ -4,6 +4,7 @@ from aiogram import types
 BUT_PROFILE = 'Профиль'
 BUT_TASKS = 'Задания'
 BUT_SCOREBOARD = 'Рейтинг'
+BUT_HELP = 'Помощь'
 BUT_ADMIN_MENU = 'Админ-меню'
 BUT_BACK = 'Назад'
 BUT_CANCEL = 'Отмена'
@@ -11,6 +12,11 @@ BUT_CANCEL = 'Отмена'
 BUT_TASK_ADD = 'Добавить задание'
 BUT_TASK_EDIT = 'Изменить задание'
 BUT_USER_EDIT = 'Изменить пользователя'
+BUT_TIME_START_SET = 'Установить время начала'
+BUT_TIME_END_SET = 'Установить время окончания'
+BUT_BROADCAST = 'Рассылка'
+BUT_DATABASE_QUERY = 'Запрос в БД'
+BUT_RESET = 'Сброс CTF'
 # Кнопки редактора задания
 BUT_TASK_NAME_EDIT = 'Изменить имя'
 BUT_TASK_DESC_EDIT = 'Изменить описание'
@@ -31,9 +37,11 @@ BUT_TASK_FILES = 'Прикрепленные файлы ({count})'
 # Кнопки профиля
 BUT_USER_NAME_CHANGE = 'Изменить имя'
 # Тексты меню
-TEXT_USER_START = '{username}, добро пожаловать на KrduCTF!\n{time}'
+TEXT_BOT_STARTUP = 'Бот запущен!'
+TEXT_BOT_SHUTDOWN = 'Бот отключен!'
+TEXT_USER_START = '{username}, добро пожаловать на KrduCTF!\nДо начала: {hours}:{minutes}:{seconds}'
 TEXT_USER_MISSED = 'Пользователь не найден!'
-TEXT_USER_START_NEW = '{username}, вы были зарегистрированы, добро пожаловать на KrduCTF!\n{time}'
+TEXT_USER_START_NEW = '{username}, вы были зарегистрированы, добро пожаловать на KrduCTF!\nДо начала: {hours}:{minutes}:{seconds}'
 TEXT_USER_UNREGISTER = 'Вы не зарегистрированы в боте, пожалуйста, введите /start'
 TEXT_ADMIN_MENU_OPENED = 'Админ-меню открыто'
 TEXT_HELP = '''
@@ -44,12 +52,24 @@ Task-based (или jeopardy) — игрокам предоставляется �
 '''
 # Тексты админ-меню
 TEXT_TASK_ADD = 'Введите название нового задания:'
+TEXT_TASK_ADD_OUTBOUND = 'Название слишком длинное!'
 TEXT_CANCEL = 'Отменяем...'
 TEXT_BACK = 'Возвращение в меню...'
 TEXT_TASK_ADDED = 'Задание добавлено'
 TEXT_TASK_DELETED = 'Задание удалено'
-TEXT_RIGHTS_MISSED = 'Недостаточно прав'
+TEXT_RIGHTS_MISSED = 'Недостаточно прав!'
 TEXT_YOU_ARE_BLOCKED = 'Вы заблокированы!'
+TEXT_BROADCAST_ENTER = 'Введите рассылаемое сообщение:'
+TEXT_BROADCAST_ENTER_OUTBOUND = 'Сообщение слишком длинное!'
+TEXT_BROADCAST_SEND = 'Сообщение отправлено!'
+TEXT_QUERY_ENTER = 'Введите запрос в БД:'
+TEXT_QUERY_SEND = 'Запрос отправлен!'
+TEXT_RESETED = 'CTF сброшен!'
+TEXT_TIME_START_SET = 'Введите время начала в формате (ДД.ММ.ГГГГ чч:мм:сс):'
+TEXT_TIME_END_SET = 'Введите время окончания в формате (ДД.ММ.ГГГГ чч:мм:сс):'
+TEXT_TIME_START_SETTED = 'Время начала установлено!'
+TEXT_TIME_END_SETTED = 'Время окончания установлено!'
+TEXT_TIME_SET_ERROR = 'Время введено некорректно!'
 # Тексты редактора заданий
 TEXT_TASKS = 'ЗАДАНИЯ'
 TEXT_TASKS_LINE = '{name} ({points})'
@@ -120,11 +140,13 @@ commands = [
 
 # Клавиатура бота
 keyboard_main = types.ReplyKeyboardMarkup(resize_keyboard=True)
-keyboard_main.add(*[BUT_PROFILE, BUT_TASKS, BUT_SCOREBOARD])
+keyboard_main.add(*[BUT_PROFILE, BUT_TASKS, BUT_SCOREBOARD, BUT_HELP])
 
 keyboard_admin = types.ReplyKeyboardMarkup(resize_keyboard=True)
 keyboard_admin.row(*[BUT_TASK_ADD, BUT_TASK_EDIT])
 keyboard_admin.row(BUT_USER_EDIT)
+keyboard_admin.row(*[BUT_BROADCAST, BUT_DATABASE_QUERY, BUT_RESET])
+keyboard_admin.row(*[BUT_TIME_START_SET, BUT_TIME_END_SET])
 keyboard_admin.row(BUT_BACK)
 
 keyboard_edit_task = types.ReplyKeyboardMarkup(resize_keyboard=True)
