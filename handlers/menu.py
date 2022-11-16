@@ -36,7 +36,7 @@ async def show_help(message: types.Message):
     await message.answer(ui.TEXT_HELP, parse_mode='html')
     
 
-def get_time_dif(time_dif: datetime.timedelta) -> tuple[int, int, int]:
+def get_time_dif(time_dif: datetime.timedelta):
     seconds_dif = time_dif.days * 24 * 60 * 60 + time_dif.seconds
 
     hours=seconds_dif // 3600
