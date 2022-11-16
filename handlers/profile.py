@@ -1,9 +1,10 @@
-from bot import dp, bot, BotStates
-import database
-import ui
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
+
+import database
+import ui
+from bot import BotStates, bot, dp
 
 
 # Показ профиля

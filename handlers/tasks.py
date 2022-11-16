@@ -1,14 +1,16 @@
-from bot import dp, bot, BotStates
-import database
-import ui
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
+from filters.time import StartTimeFilter, EndTimeFilter
+
+import database
+import ui
+from bot import BotStates, bot, dp
 
 
 # Показ заданий
-@dp.message_handler(commands='tasks')
-@dp.message_handler(Text(equals=ui.BUT_TASKS))
+@dp.message_handler(StartTimeFilter(), EndTimeFilter(), commands='tasks')
+@dp.message_handler(Text(equals=ui.BUT_TASKS), StartTimeFilter(), EndTimeFilter())
 async def show_tasks(message: types.Message):
     if database.get_user_block(message.from_user.id):
         await message.answer(ui.TEXT_YOU_ARE_BLOCKED)
@@ -26,7 +28,7 @@ async def show_tasks(message: types.Message):
 
 
 # Хендлер показа задания
-@dp.callback_query_handler(Text(startswith='taskshow'))
+@dp.callback_query_handler(Text(startswith='taskshow'), StartTimeFilter(), EndTimeFilter())
 async def handle_task_show(callback_query: types.CallbackQuery):
     task_id = int(callback_query.data.split('_')[1])
     task = database.get_task(task_id)
@@ -47,7 +49,7 @@ async def handle_task_show(callback_query: types.CallbackQuery):
 
 
 # Хендлер прикрепленных файлов
-@dp.callback_query_handler(Text(startswith='taskfiles'))
+@dp.callback_query_handler(Text(startswith='taskfiles'), StartTimeFilter(), EndTimeFilter())
 async def handle_flag(callback_query: types.CallbackQuery):
     task_id = int(callback_query.data.split('_')[1])
 
@@ -61,7 +63,7 @@ async def handle_flag(callback_query: types.CallbackQuery):
 
 
 # Хендлер начала ввода флага
-@dp.callback_query_handler(Text(startswith='flagenter'))
+@dp.callback_query_handler(Text(startswith='flagenter'), StartTimeFilter(), EndTimeFilter())
 async def handle_flag_enter(callback_query: types.CallbackQuery):
     await BotStates.task_flag_enter.set()
 
@@ -74,7 +76,7 @@ async def handle_flag_enter(callback_query: types.CallbackQuery):
 
 
 # Хэндлер ввода флага
-@dp.message_handler(state=BotStates.task_flag_enter)
+@dp.message_handler(StartTimeFilter(), EndTimeFilter(), state=BotStates.task_flag_enter)
 async def enter_edit_task_name(message: types.Message, state: FSMContext):
     await state.finish()
 

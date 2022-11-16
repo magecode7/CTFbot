@@ -1,9 +1,10 @@
-from bot import dp, bot, BotStates
+from aiogram import types
+from aiogram.dispatcher.filters import Text
+from filters.rights import MinRightsFilter
+
 import database
 import ui
-from aiogram import types
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
+from bot import BotStates, bot, dp
 
 
 # Показ изменяемого задания
@@ -26,7 +27,7 @@ async def show_editable_task(user_id: int):
 
 
 # Хэндлер ввода изменения задания
-@dp.callback_query_handler(Text(startswith='taskedit'), min_rights=1)
+@dp.callback_query_handler(Text(startswith='taskedit'), MinRightsFilter(1), state=BotStates.admin)
 async def task_edit_handle(callback_query: types.CallbackQuery):
     task_id = int(callback_query.data.split('_')[1])
     task = database.get_task(task_id)
@@ -40,13 +41,15 @@ async def task_edit_handle(callback_query: types.CallbackQuery):
     if task:
         database.set_selected_task(callback_query.from_user.id, task_id)
 
+        await BotStates.task_edit.set()
+
         await show_editable_task(callback_query.from_user.id)
     else:
         await bot.send_message(callback_query.from_user.id, ui.TEXT_TASK_MISSED, reply_markup=ui.keyboard_back)
 
 
 # Показ ввода изменения названия задания
-@dp.message_handler(Text(equals=ui.BUT_TASK_NAME_EDIT), min_rights=1)
+@dp.message_handler(Text(equals=ui.BUT_TASK_NAME_EDIT), state=BotStates.task_edit)
 async def show_edit_task_name(message: types.Message):
     await BotStates.task_edit_name.set()
 
@@ -54,15 +57,15 @@ async def show_edit_task_name(message: types.Message):
 
 
 # Перехватчик ввода изменения названия задания
-@dp.message_handler(state=BotStates.task_edit_name, min_rights=1)
-async def enter_edit_task_name(message: types.Message, state: FSMContext):
+@dp.message_handler(state=BotStates.task_edit_name)
+async def enter_edit_task_name(message: types.Message):
     if len(message.text) > 16:
         await message.answer(ui.TEXT_TASK_NAME_EDIT_OUTBOUND)
         return
 
     database.set_task_name(database.get_selected_task_id(message.from_user.id), message.text)
     
-    await state.finish()
+    await BotStates.task_edit.set()
 
     await show_editable_task(message.from_user.id)
 

@@ -1,13 +1,12 @@
-import database
-import ui
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
 
+import database
+import ui
 
-class RightsFilter(BoundFilter):
-    key = 'min_rights'
 
-    def __init__(self, min_rights: int):
+class MinRightsFilter(BoundFilter):
+    def __init__(self, min_rights: int = 0):
         self.min_rights = min_rights
     
 

@@ -1,4 +1,2 @@
-from bot import dp
-from filters.rights import RightsFilter
-
-dp.filters_factory.bind(RightsFilter)
+from filters.rights import MinRightsFilter
+from filters.time import StartTimeFilter, EndTimeFilter

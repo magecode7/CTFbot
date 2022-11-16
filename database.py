@@ -1,5 +1,5 @@
-from datetime import datetime
 import sqlite3
+from datetime import datetime
 
 # Формат даты ввода и вывода
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -55,6 +55,7 @@ def create_tables():
         start_date TIMESTAMP,
         end_date TIMESTAMP
     )""")
+    cur.execute("INSERT OR IGNORE INTO config (id) VALUES (1)")
     conn.commit()
 
 
@@ -306,7 +307,7 @@ def reset_competitions():
 def set_start_time(date: datetime):
     """Установить дату начала"""
     
-    cur.execute("INSERT OR REPLACE INTO config (id, start_date) VALUES (1, ?)", (date, ))
+    cur.execute("UPDATE config SET start_date = ? WHERE id = 1", (date, ))
     conn.commit()
 
 
@@ -318,13 +319,13 @@ def get_start_time() -> datetime:
     if date:
         return datetime.strptime(date, DATETIME_FORMAT)
     else:
-        return datetime.now()
+        return datetime.min
 
 
 def set_end_time(date: datetime):
     """Установить дату окончания"""
 
-    cur.execute("INSERT OR REPLACE INTO config (id, end_date) VALUES (1, ?)", (date, ))
+    cur.execute("UPDATE config SET end_date = ? WHERE id = 1", (date, ))
     conn.commit()
 
 
@@ -332,7 +333,11 @@ def get_end_time() -> datetime:
     """Получить дату окончания"""
 
     cur.execute("SELECT end_date FROM config")
-    return datetime.strptime(cur.fetchone()[0], DATETIME_FORMAT)
+    date = cur.fetchone()[0]
+    if date:
+        return datetime.strptime(date, DATETIME_FORMAT)
+    else:
+        return datetime.min
 
 
 if __name__ == "__main__":

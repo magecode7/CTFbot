@@ -1,14 +1,17 @@
 import datetime
-from bot import dp, bot, BotStates
-import database
-import ui
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
+from filters.rights import MinRightsFilter
+
+import database
+import ui
+from bot import BotStates, bot, dp
 
 
 # Админ панель
-@dp.message_handler(commands='admin', min_rights=1)
+@dp.message_handler(MinRightsFilter(1), commands='admin')
 async def show_admin_panel(message: types.Message):
     if database.get_user_block(message.from_user.id):
         await message.answer(ui.TEXT_YOU_ARE_BLOCKED)
@@ -20,7 +23,7 @@ async def show_admin_panel(message: types.Message):
 
 
 # Добавить задание
-@dp.message_handler(Text(equals=ui.BUT_TASK_ADD), state=BotStates.admin, min_rights=1)
+@dp.message_handler(Text(equals=ui.BUT_TASK_ADD), MinRightsFilter(1), state=BotStates.admin)
 async def show_add_task(message: types.Message):
     await BotStates.task_add_enter.set()
 
@@ -66,7 +69,7 @@ async def show_edit_users(message: types.Message):
 
 
 # Рассылка сообщений
-@dp.message_handler(Text(equals=ui.BUT_BROADCAST), state=BotStates.admin, min_rights=4)
+@dp.message_handler(Text(equals=ui.BUT_BROADCAST), MinRightsFilter(4), state=BotStates.admin)
 async def show_broadcast(message: types.Message):
     await BotStates.broadcast_enter.set()
 
@@ -92,7 +95,7 @@ async def broadcast_enter(message: types.Message):
     
 
 # Запрос в БД
-@dp.message_handler(Text(equals=ui.BUT_DATABASE_QUERY), state=BotStates.admin, min_rights=5)
+@dp.message_handler(Text(equals=ui.BUT_DATABASE_QUERY), MinRightsFilter(5), state=BotStates.admin)
 async def show_database_query(message: types.Message):
     await BotStates.database_query_enter.set()
 
@@ -110,7 +113,7 @@ async def database_query_enter(message: types.Message):
 
 
 # Сброс соревнований
-@dp.message_handler(Text(equals=ui.BUT_RESET), state=BotStates.admin, min_rights=5)
+@dp.message_handler(Text(equals=ui.BUT_RESET), MinRightsFilter(5), state=BotStates.admin)
 async def show_reset(message: types.Message):
     database.reset_competitions()
 
@@ -118,7 +121,7 @@ async def show_reset(message: types.Message):
 
 
 # Показ установки времени начала
-@dp.message_handler(Text(equals=ui.BUT_TIME_START_SET), state=BotStates.admin, min_rights=4)
+@dp.message_handler(Text(equals=ui.BUT_TIME_START_SET), MinRightsFilter(4), state=BotStates.admin)
 async def show_time_start(message: types.Message):
     await BotStates.time_start_set.set()
 
@@ -137,4 +140,27 @@ async def time_start_set(message: types.Message):
 
         await message.answer(ui.TEXT_TIME_START_SETTED)
     except Exception as e:
-        await message.answer(ui.TEXT_TIME_SET_ERROR + '\n' + str(e))
+        await message.answer(ui.TEXT_TIME_SET_ERROR)
+
+
+# Показ установки времени окончания
+@dp.message_handler(Text(equals=ui.BUT_TIME_END_SET), MinRightsFilter(4), state=BotStates.admin)
+async def show_time_end(message: types.Message):
+    await BotStates.time_end_set.set()
+
+    await message.answer(ui.TEXT_TIME_END_SET)
+
+
+# Хендлер установки времени окончания
+@dp.message_handler(state=BotStates.time_end_set)
+async def time_end_set(message: types.Message):
+    try:
+        date = datetime.datetime.strptime(message.text, "%d.%m.%Y %H:%M:%S")
+
+        database.set_end_time(date)
+
+        await BotStates.admin.set()
+
+        await message.answer(ui.TEXT_TIME_END_SETTED)
+    except Exception as e:
+        await message.answer(ui.TEXT_TIME_SET_ERROR)

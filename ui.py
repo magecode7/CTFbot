@@ -1,6 +1,7 @@
 from aiogram import types
 
 # Кнопки меню
+BUT_MAIN = 'Главная'
 BUT_PROFILE = 'Профиль'
 BUT_TASKS = 'Задания'
 BUT_SCOREBOARD = 'Рейтинг'
@@ -39,9 +40,17 @@ BUT_USER_NAME_CHANGE = 'Изменить имя'
 # Тексты меню
 TEXT_BOT_STARTUP = 'Бот запущен!'
 TEXT_BOT_SHUTDOWN = 'Бот отключен!'
-TEXT_USER_START = '{username}, добро пожаловать на KrduCTF!\nДо начала: {hours}:{minutes}:{seconds}'
+TEXT_MAIN = 'CTF'
+TEXT_MAIN_START_TIME = '\n\nНачало: {start_time}'
+TEXT_MAIN_END_TIME = '\n\nОконочание: {end_time}'
+TEXT_MAIN_START_TIME_REMAIN = '\nДо начала: {time_remaining}'
+TEXT_MAIN_END_TIME_REMAIN = '\nДо окончания: {time_remaining}'
+TEXT_MAIN_NOT_STARTED = '\n\nCTF не начался!'
+TEXT_MAIN_STARTED = '\n\nCTF начался!'
+TEXT_MAIN_ENDED = '\n\nCTF закончился!'
+TEXT_USER_START = '{username}, добро пожаловать на CTF!'
 TEXT_USER_MISSED = 'Пользователь не найден!'
-TEXT_USER_START_NEW = '{username}, вы были зарегистрированы, добро пожаловать на KrduCTF!\nДо начала: {hours}:{minutes}:{seconds}'
+TEXT_USER_START_NEW = '{username}, вы были зарегистрированы, добро пожаловать на CTF!'
 TEXT_USER_UNREGISTER = 'Вы не зарегистрированы в боте, пожалуйста, введите /start'
 TEXT_ADMIN_MENU_OPENED = 'Админ-меню открыто'
 TEXT_HELP = '''
@@ -140,7 +149,9 @@ commands = [
 
 # Клавиатура бота
 keyboard_main = types.ReplyKeyboardMarkup(resize_keyboard=True)
-keyboard_main.add(*[BUT_PROFILE, BUT_TASKS, BUT_SCOREBOARD, BUT_HELP])
+keyboard_main.row(BUT_MAIN)
+keyboard_main.row(BUT_TASKS)
+keyboard_main.row(*[BUT_PROFILE, BUT_SCOREBOARD, BUT_HELP])
 
 keyboard_admin = types.ReplyKeyboardMarkup(resize_keyboard=True)
 keyboard_admin.row(*[BUT_TASK_ADD, BUT_TASK_EDIT])

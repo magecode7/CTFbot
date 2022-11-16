@@ -1,11 +1,12 @@
 import logging
-import config
-import database
-import ui
+
 from aiogram import Bot, Dispatcher, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
+import config
+import database
+import ui
 
 # Логирование
 # logging.basicConfig(filename='bot.log', level=logging.DEBUG)
@@ -40,6 +41,7 @@ class BotStates(StatesGroup):
     broadcast_enter = State()
     database_query_enter = State()
     time_start_set = State()
+    time_end_set = State()
 
 
 # При включении

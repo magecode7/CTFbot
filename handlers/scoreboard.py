@@ -1,8 +1,9 @@
-from bot import dp
-import database
-import ui
 from aiogram import types
 from aiogram.dispatcher.filters import Text
+
+import database
+import ui
+from bot import dp
 
 
 # Хэндлер показа рейтинга
