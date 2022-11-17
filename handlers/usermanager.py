@@ -11,7 +11,8 @@ async def show_editable_user(user_id: int):
     text = ui.TEXT_USER_SELECTED.format(id=user_id)
 
     user = database.get_user(database.get_selected_user_id(user_id))
-    text += ui.TEXT_USER_EDITING.format(name=user['name'], rights=user['rights'], blocked=bool(user['blocked']))
+    text += ui.TEXT_USER_EDITING.format(
+        name=user['name'], rights=user['rights'], blocked=bool(user['blocked']))
 
     await bot.send_message(user_id, text, reply_markup=ui.keyboard_edit_user)
 
@@ -30,7 +31,8 @@ async def user_edit_handle(callback_query: types.CallbackQuery):
         return
 
     if selected_user:
-        database.set_selected_user(callback_query.from_user.id, selected_user_id)
+        database.set_selected_user(
+            callback_query.from_user.id, selected_user_id)
 
         await BotStates.user_edit.set()
 
@@ -52,7 +54,8 @@ async def show_edit_user_name(message: types.Message):
 async def enter_edit_user_name(message: types.Message):
     await BotStates.user_edit.set()
 
-    database.set_user_name(database.get_selected_user_id(message.from_user.id), message.text)
+    database.set_user_name(database.get_selected_user_id(
+        message.from_user.id), message.text)
 
     await show_editable_user(message.from_user.id)
 
@@ -67,7 +70,7 @@ async def show_edit_user_rights(message: types.Message):
 
 # Перехватчик ввода изменения прав пользователя
 @dp.message_handler(state=BotStates.user_edit_rights)
-async def enter_edit_user_rights(message: types.Message):   
+async def enter_edit_user_rights(message: types.Message):
     selected_user_id = database.get_selected_user_id(message.from_user.id)
     old_rights = database.get_user_rights(selected_user_id)
 
@@ -81,7 +84,7 @@ async def enter_edit_user_rights(message: types.Message):
         if rights < 0 or rights > 4:
             await message.answer(ui.TEXT_USER_RIGHTS_NOT_DIGIT)
             return
-        
+
         database.set_user_rights(selected_user_id, rights)
 
         await BotStates.user_edit.set()
@@ -102,7 +105,9 @@ async def show_edit_user_block(message: types.Message):
 
     database.set_user_block(selected_user_id, not blocked)
 
-    if blocked: await message.answer(ui.TEXT_USER_UNBLOCKED)
-    else: await message.answer(ui.TEXT_USER_BLOCKED)
+    if blocked:
+        await message.answer(ui.TEXT_USER_UNBLOCKED)
+    else:
+        await message.answer(ui.TEXT_USER_BLOCKED)
 
     await show_editable_user(message.from_user.id)

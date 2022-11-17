@@ -51,7 +51,8 @@ async def show_edit_tasks(message: types.Message):
 
     inline_tasks = types.InlineKeyboardMarkup()
     for task in tasks:
-        inline_tasks.insert(types.InlineKeyboardButton(ui.TEXT_TASKS_LINE.format(name=task['name'], points=task['points']), callback_data=f"taskedit_{task['id']}"))
+        inline_tasks.insert(types.InlineKeyboardButton(ui.TEXT_TASKS_LINE.format(
+            name=task['name'], points=task['points']), callback_data=f"taskedit_{task['id']}"))
 
     await message.answer(ui.TEXT_TASKS, reply_markup=inline_tasks)
 
@@ -63,7 +64,8 @@ async def show_edit_users(message: types.Message):
 
     inline_users = types.InlineKeyboardMarkup()
     for user in users:
-        inline_users.insert(types.InlineKeyboardButton(ui.TEXT_USERS_LINE.format(id=user['id'], name=user['name']), callback_data=f"useredit_{user['id']}"))
+        inline_users.insert(types.InlineKeyboardButton(ui.TEXT_USERS_LINE.format(
+            id=user['id'], name=user['name']), callback_data=f"useredit_{user['id']}"))
 
     await message.answer(ui.TEXT_USERS, reply_markup=inline_users)
 
@@ -92,7 +94,7 @@ async def broadcast_enter(message: types.Message):
     await BotStates.admin.set()
 
     await message.answer(ui.TEXT_BROADCAST_SEND, reply_markup=ui.keyboard_admin)
-    
+
 
 # Запрос в БД
 @dp.message_handler(Text(equals=ui.BUT_DATABASE_QUERY), MinRightsFilter(5), state=BotStates.admin)

@@ -9,10 +9,12 @@ from bot import BotStates, bot, dp
 
 # Показ изменяемого задания
 async def show_editable_task(user_id: int):
-    text = ui.TEXT_TASK_SELECTED.format(id=database.get_selected_task_id(user_id))
+    text = ui.TEXT_TASK_SELECTED.format(
+        id=database.get_selected_task_id(user_id))
 
     task = database.get_task(database.get_selected_task_id(user_id))
-    text += ui.TEXT_TASK_EDITING.format(name=task['name'], points=task['points'], desc=task['description'], flag=task['flag'], owner=task['owner_user_id'], visible=bool(task['visible']))
+    text += ui.TEXT_TASK_EDITING.format(name=task['name'], points=task['points'], desc=task['description'],
+                                        flag=task['flag'], owner=task['owner_user_id'], visible=bool(task['visible']))
 
     files = database.get_files(task['id'])
     if files:
@@ -37,7 +39,7 @@ async def task_edit_handle(callback_query: types.CallbackQuery):
     if task['owner_user_id'] != callback_query.from_user.id and database.get_user_rights(callback_query.from_user.id) <= 1:
         await bot.send_message(callback_query.from_user.id, ui.TEXT_RIGHTS_MISSED)
         return
-    
+
     if task:
         database.set_selected_task(callback_query.from_user.id, task_id)
 
@@ -63,8 +65,9 @@ async def enter_edit_task_name(message: types.Message):
         await message.answer(ui.TEXT_TASK_NAME_EDIT_OUTBOUND)
         return
 
-    database.set_task_name(database.get_selected_task_id(message.from_user.id), message.text)
-    
+    database.set_task_name(database.get_selected_task_id(
+        message.from_user.id), message.text)
+
     await BotStates.task_edit.set()
 
     await show_editable_task(message.from_user.id)
@@ -85,8 +88,9 @@ async def enter_edit_task_desc(message: types.Message):
         await message.answer(ui.TEXT_TASK_DESC_EDIT_OUTBOUND)
         return
 
-    database.set_task_desc(database.get_selected_task_id(message.from_user.id), message.text)
-    
+    database.set_task_desc(database.get_selected_task_id(
+        message.from_user.id), message.text)
+
     await BotStates.task_edit.set()
 
     await show_editable_task(message.from_user.id)
@@ -107,8 +111,9 @@ async def enter_edit_task_flag(message: types.Message):
         await message.answer(ui.TEXT_TASK_FLAG_EDIT_OUTBOUND)
         return
 
-    database.set_task_flag(database.get_selected_task_id(message.from_user.id), message.text)
-    
+    database.set_task_flag(database.get_selected_task_id(
+        message.from_user.id), message.text)
+
     await BotStates.task_edit.set()
 
     await show_editable_task(message.from_user.id)
@@ -132,14 +137,15 @@ async def enter_edit_task_points(message: types.Message):
             await message.answer(ui.TEXT_TASK_POINTS_EDIT_OUTBOUND)
             return
 
-        database.set_task_points(database.get_selected_task_id(message.from_user.id), points)
-    
+        database.set_task_points(
+            database.get_selected_task_id(message.from_user.id), points)
+
         await BotStates.task_edit.set()
 
         await show_editable_task(message.from_user.id)
     except Exception as e:
         await message.answer(ui.TEXT_TASK_POINTS_EDIT_ERROR)
-    
+
 
 # Изменение видимости задания
 @dp.message_handler(Text(equals=ui.BUT_TASK_VISIBILITY_EDIT), state=BotStates.task_edit)
@@ -157,7 +163,7 @@ async def show_edit_task_visibile(message: types.Message):
 @dp.message_handler(Text(equals=ui.BUT_TASK_DELETE), state=BotStates.task_edit)
 async def show_delete_task(message: types.Message):
     database.delete_task(database.get_selected_task_id(message.from_user.id))
-    
+
     await BotStates.admin.set()
 
     await message.answer(ui.TEXT_TASK_DELETED, reply_markup=ui.keyboard_admin)
@@ -166,7 +172,8 @@ async def show_delete_task(message: types.Message):
 # Добавить файл к заданию
 @dp.message_handler(Text(equals=ui.BUT_TASK_FILE_ADD), state=BotStates.task_edit)
 async def file_add(message: types.Message):
-    files = database.get_files(database.get_selected_task_id(message.from_user.id))
+    files = database.get_files(
+        database.get_selected_task_id(message.from_user.id))
 
     if len(files) >= 5:
         await message.answer(ui.TEXT_TASK_FILE_ADD_UNBOUND)
@@ -180,8 +187,9 @@ async def file_add(message: types.Message):
 # Перехватчик файла
 @dp.message_handler(content_types=types.ContentType.DOCUMENT, state=BotStates.task_file_add)
 async def file_handle(message: types.Message):
-    database.add_file(database.get_selected_task_id(message.from_user.id), message.document.file_id,  message.document.file_name)
-    
+    database.add_file(database.get_selected_task_id(
+        message.from_user.id), message.document.file_id,  message.document.file_name)
+
     await BotStates.task_edit.set()
 
     await message.answer(ui.TEXT_TASK_FILE_ADDED)
@@ -195,10 +203,11 @@ async def file_delete(message: types.Message):
     task_id = database.get_selected_task_id(message.from_user.id)
 
     files = database.get_files(task_id)
-    
+
     inline_files = types.InlineKeyboardMarkup()
     for file in files:
-        inline_files.add(types.InlineKeyboardButton(file['name'], callback_data=f"filedelete_{file['id']}_{task_id}"))
+        inline_files.add(types.InlineKeyboardButton(
+            file['name'], callback_data=f"filedelete_{file['id']}_{task_id}"))
 
     await message.answer(ui.TEXT_TASK_FILES_DELETE, reply_markup=inline_files)
 
@@ -215,7 +224,8 @@ async def handle_file_delete(callback_query: types.CallbackQuery):
 
     inline_files = types.InlineKeyboardMarkup()
     for file in files:
-        inline_files.add(types.InlineKeyboardButton(file['name'], callback_data=f"filedelete_{file['id']}_{task_id}"))
+        inline_files.add(types.InlineKeyboardButton(
+            file['name'], callback_data=f"filedelete_{file['id']}_{task_id}"))
 
     await callback_query.answer()
     if files:

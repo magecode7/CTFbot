@@ -14,12 +14,13 @@ async def show_profile(message: types.Message):
     user = database.get_user(message.from_user.id)
 
     inline_profile = types.InlineKeyboardMarkup()
-    inline_profile.add(types.InlineKeyboardButton(ui.BUT_USER_NAME_CHANGE, callback_data=f'changename_{message.from_user.id}'))
+    inline_profile.add(types.InlineKeyboardButton(
+        ui.BUT_USER_NAME_CHANGE, callback_data=f'changename_{message.from_user.id}'))
 
     if user:
         await message.answer(ui.TEXT_USER_PROFILE.format(id=user['id'], name=user['name'], points=database.get_user_score(message.from_user.id)), parse_mode='html', reply_markup=inline_profile)
     else:
-        await message.answer(ui.TEXT_USER_UNREGISTER) 
+        await message.answer(ui.TEXT_USER_UNREGISTER)
 
 
 # Хендлер изменения имени

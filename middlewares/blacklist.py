@@ -7,10 +7,6 @@ from aiogram.dispatcher.middlewares import BaseMiddleware
 
 
 def blacklist_ignore(access=False):
-    """
-    
-    """
-    
     def decorator(func):
         setattr(func, 'blacklist_access', access)
         return func
@@ -41,7 +37,7 @@ class BlacklistMiddleware(BaseMiddleware):
             access = self.access
 
         blocked = database.get_user_block(message.from_user.id)
-        
+
         if blocked and not access:
             await message.answer(ui.TEXT_YOU_ARE_BLOCKED)
 

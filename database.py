@@ -127,7 +127,8 @@ def get_user_block(user_id: int) -> bool:
 def add_user(user_id: int, name: str, rights: int = 0):
     """Добавляет нового пользователя в БД"""
 
-    cur.execute("INSERT INTO users (id, name, rights) VALUES (?, ?, ?)", (user_id, name, rights))
+    cur.execute("INSERT INTO users (id, name, rights) VALUES (?, ?, ?)",
+                (user_id, name, rights))
     conn.commit()
 
 
@@ -255,14 +256,16 @@ def set_task_points(task_id: int, points: int):
 def set_selected_task(user_id: int, selected_task_id: int):
     """Изменить выбранное задание пользователем"""
 
-    cur.execute("UPDATE users SET selected_task_id = ? WHERE id = ?", (selected_task_id, user_id))
+    cur.execute("UPDATE users SET selected_task_id = ? WHERE id = ?",
+                (selected_task_id, user_id))
     conn.commit()
 
 
 def set_selected_user(user_id: int, selected_user_id: int):
     """Изменить выбранного пользователя пользователем"""
 
-    cur.execute("UPDATE users SET selected_user_id = ? WHERE id = ?", (selected_user_id, user_id))
+    cur.execute("UPDATE users SET selected_user_id = ? WHERE id = ?",
+                (selected_user_id, user_id))
     conn.commit()
 
 
@@ -276,7 +279,8 @@ def set_user_name(user_id: int, name: str):
 def set_user_rights(user_id: int, rights: int):
     """Изменяет права пользователя"""
 
-    if rights < 0 or rights > 5: return
+    if rights < 0 or rights > 5:
+        return
 
     cur.execute("UPDATE users SET rights = ? WHERE id = ?", (rights, user_id))
     conn.commit()
@@ -285,7 +289,8 @@ def set_user_rights(user_id: int, rights: int):
 def set_user_block(user_id: int, blocked: bool):
     """Изменяет блокировку пользователя"""
 
-    cur.execute("UPDATE users SET blocked = ? WHERE id = ?", (blocked, user_id))
+    cur.execute("UPDATE users SET blocked = ? WHERE id = ?",
+                (blocked, user_id))
     conn.commit()
 
 
@@ -306,7 +311,7 @@ def reset_competitions():
 
 def set_start_time(date: datetime):
     """Установить дату начала"""
-    
+
     cur.execute("UPDATE config SET start_date = ? WHERE id = 1", (date, ))
     conn.commit()
 

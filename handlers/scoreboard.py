@@ -16,6 +16,7 @@ async def show_scoreboard(message: types.Message):
     pos = 0
     for score in scoreboard:
         pos += 1
-        text += ui.TEXT_SCOREBOARD_LINE.format(position=pos, name=score['username'], score=score['score'])
+        text += ui.TEXT_SCOREBOARD_LINE.format(
+            position=pos, name=score['username'], score=score['score'])
 
     await message.answer(text)

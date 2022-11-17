@@ -22,7 +22,8 @@ async def show_tasks(message: types.Message):
     for task in tasks:
         visible = task['visible']
         if visible:
-            inline_tasks.insert(types.InlineKeyboardButton(ui.TEXT_TASKS_LINE.format(name=task['name'], points=task['points']), callback_data=f"taskshow_{task['id']}"))
+            inline_tasks.insert(types.InlineKeyboardButton(ui.TEXT_TASKS_LINE.format(
+                name=task['name'], points=task['points']), callback_data=f"taskshow_{task['id']}"))
 
     await message.answer(ui.TEXT_TASKS, reply_markup=inline_tasks)
 
@@ -35,12 +36,14 @@ async def handle_task_show(callback_query: types.CallbackQuery):
 
     inline_keyboard_task = types.InlineKeyboardMarkup()
     solved = database.get_task_solved(callback_query.from_user.id, task_id)
-    if not solved: 
-        inline_keyboard_task.insert(types.InlineKeyboardButton(ui.BUT_TASK_FLAG_ENTER, callback_data=f'flagenter_{task_id}'))
-    
+    if not solved:
+        inline_keyboard_task.insert(types.InlineKeyboardButton(
+            ui.BUT_TASK_FLAG_ENTER, callback_data=f'flagenter_{task_id}'))
+
     files = database.get_files(task_id)
     if files:
-        inline_keyboard_task.insert(types.InlineKeyboardButton(ui.BUT_TASK_FILES.format(count=len(files)), callback_data=f'taskfiles_{task_id}'))
+        inline_keyboard_task.insert(types.InlineKeyboardButton(
+            ui.BUT_TASK_FILES.format(count=len(files)), callback_data=f'taskfiles_{task_id}'))
 
     await callback_query.answer()
 

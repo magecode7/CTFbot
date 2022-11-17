@@ -19,13 +19,14 @@ async def show_start(message: types.Message, state: FSMContext):
 
     text = ''
     if not user:  # Проверка на регистрацию в боте
-        database.add_user(message.from_user.id, str(message.from_user.full_name))
+        database.add_user(message.from_user.id, str(
+            message.from_user.full_name))
         text = ui.TEXT_USER_START_NEW
     else:
         text = ui.TEXT_USER_START
 
     await message.answer(text.format(
-        username=message.from_user.full_name), 
+        username=message.from_user.full_name),
         reply_markup=ui.keyboard_main)
 
 
@@ -34,17 +35,17 @@ async def show_start(message: types.Message, state: FSMContext):
 @dp.message_handler(Text(equals=ui.BUT_HELP))
 async def show_help(message: types.Message):
     await message.answer(ui.TEXT_HELP, parse_mode='html')
-    
+
 
 def get_time_dif(time_dif: datetime.timedelta):
     seconds_dif = time_dif.days * 24 * 60 * 60 + time_dif.seconds
 
-    hours=seconds_dif // 3600
-    minutes=seconds_dif % 3600 // 60
-    seconds=seconds_dif % 60 
+    hours = seconds_dif // 3600
+    minutes = seconds_dif % 3600 // 60
+    seconds = seconds_dif % 60
     return (hours, minutes, seconds)
 
-    
+
 # Хэндлер главного меню
 @dp.message_handler(commands='main', state='*')
 @dp.message_handler(Text(equals=ui.BUT_MAIN))
@@ -55,22 +56,28 @@ async def show_main(message: types.Message):
     is_started = start_time < datetime.datetime.now()
     is_ended = end_time < datetime.datetime.now()
 
-    hours, minutes, seconds = get_time_dif(start_time - datetime.datetime.now())
+    hours, minutes, seconds = get_time_dif(
+        start_time - datetime.datetime.now())
 
     text = ui.TEXT_MAIN
-    if start_time and not is_started: 
-        text += (ui.TEXT_MAIN_START_TIME + ui.TEXT_MAIN_START_TIME_REMAIN).format(start_time=start_time.strftime("%d.%m.%Y %H:%M:%S"), time_remaining=f'{hours}:{minutes}:{seconds}')
+    if start_time and not is_started:
+        text += (ui.TEXT_MAIN_START_TIME + ui.TEXT_MAIN_START_TIME_REMAIN).format(
+            start_time=start_time.strftime("%d.%m.%Y %H:%M:%S"), time_remaining=f'{hours}:{minutes}:{seconds}')
 
     hours, minutes, seconds = get_time_dif(end_time - datetime.datetime.now())
 
-    if end_time and not is_ended: 
-        text += (ui.TEXT_MAIN_END_TIME + ui.TEXT_MAIN_END_TIME_REMAIN).format(end_time=end_time.strftime("%d.%m.%Y %H:%M:%S"), time_remaining=f'{hours}:{minutes}:{seconds}')
+    if end_time and not is_ended:
+        text += (ui.TEXT_MAIN_END_TIME + ui.TEXT_MAIN_END_TIME_REMAIN).format(
+            end_time=end_time.strftime("%d.%m.%Y %H:%M:%S"), time_remaining=f'{hours}:{minutes}:{seconds}')
 
-    if start_time and not is_started: text += ui.TEXT_MAIN_NOT_STARTED
+    if start_time and not is_started:
+        text += ui.TEXT_MAIN_NOT_STARTED
 
-    if (is_started and not is_ended) or (not start_time and not is_ended) or (not start_time and not end_time): text += ui.TEXT_MAIN_STARTED
+    if (is_started and not is_ended) or (not start_time and not is_ended) or (not start_time and not end_time):
+        text += ui.TEXT_MAIN_STARTED
 
-    if end_time and is_ended: text += ui.TEXT_MAIN_ENDED
+    if end_time and is_ended:
+        text += ui.TEXT_MAIN_ENDED
 
     await message.answer(text, reply_markup=ui.keyboard_main)
 

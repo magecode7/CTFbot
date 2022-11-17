@@ -162,9 +162,10 @@ keyboard_admin.row(BUT_BACK)
 
 keyboard_edit_task = types.ReplyKeyboardMarkup(resize_keyboard=True)
 keyboard_edit_task.row(BUT_TASK_VISIBILITY_EDIT)
-keyboard_edit_task.row(*[BUT_TASK_NAME_EDIT, BUT_TASK_DESC_EDIT, BUT_TASK_FLAG_EDIT, BUT_TASK_POINTS_EDIT])
+keyboard_edit_task.row(*[BUT_TASK_NAME_EDIT, BUT_TASK_DESC_EDIT,
+                       BUT_TASK_FLAG_EDIT, BUT_TASK_POINTS_EDIT])
 keyboard_edit_task.row(*[BUT_TASK_FILE_ADD, BUT_TASK_FILE_DELETE])
-keyboard_edit_task.row(*[BUT_TASK_RESET , BUT_TASK_DELETE])
+keyboard_edit_task.row(*[BUT_TASK_RESET, BUT_TASK_DELETE])
 keyboard_edit_task.row(BUT_BACK)
 
 keyboard_edit_user = types.ReplyKeyboardMarkup(resize_keyboard=True)
