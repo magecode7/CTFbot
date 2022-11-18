@@ -6,7 +6,7 @@ from aiogram.dispatcher.filters import Text
 
 import database
 import ui
-from bot import dp
+from bot import dp, logger
 
 
 # Хэндлер запуска
@@ -22,6 +22,8 @@ async def show_start(message: types.Message, state: FSMContext):
         database.add_user(message.from_user.id, str(
             message.from_user.full_name))
         text = ui.TEXT_USER_START_NEW
+
+        logger.info(f'New user {message.from_user.full_name} ({message.from_user.id}) registered')
     else:
         text = ui.TEXT_USER_START
 
@@ -32,7 +34,7 @@ async def show_start(message: types.Message, state: FSMContext):
 
 # Хэндлер меню помощи
 @dp.message_handler(commands='help', state='*')
-@dp.message_handler(Text(equals=ui.BUT_HELP))
+@dp.message_handler(Text(equals=ui.BUT_HELP), state='*')
 async def show_help(message: types.Message):
     await message.answer(ui.TEXT_HELP, parse_mode='html')
 
@@ -48,7 +50,7 @@ def get_time_dif(time_dif: datetime.timedelta):
 
 # Хэндлер главного меню
 @dp.message_handler(commands='main', state='*')
-@dp.message_handler(Text(equals=ui.BUT_MAIN))
+@dp.message_handler(Text(equals=ui.BUT_MAIN), state='*')
 async def show_main(message: types.Message):
     start_time = database.get_start_time()
     end_time = database.get_end_time()
@@ -60,23 +62,29 @@ async def show_main(message: types.Message):
         start_time - datetime.datetime.now())
 
     text = ui.TEXT_MAIN
-    if start_time and not is_started:
+    
+    if start_time >= end_time:
+        text += ui.TEXT_MAIN_STARTED
+        await message.answer(text, reply_markup=ui.keyboard_main)
+        return
+
+    if start_time != datetime.datetime.min and not is_started:
         text += (ui.TEXT_MAIN_START_TIME + ui.TEXT_MAIN_START_TIME_REMAIN).format(
             start_time=start_time.strftime("%d.%m.%Y %H:%M:%S"), time_remaining=f'{hours}:{minutes}:{seconds}')
 
     hours, minutes, seconds = get_time_dif(end_time - datetime.datetime.now())
 
-    if end_time and not is_ended:
+    if end_time != datetime.datetime.min and not is_ended:
         text += (ui.TEXT_MAIN_END_TIME + ui.TEXT_MAIN_END_TIME_REMAIN).format(
             end_time=end_time.strftime("%d.%m.%Y %H:%M:%S"), time_remaining=f'{hours}:{minutes}:{seconds}')
 
-    if start_time and not is_started:
+    if start_time != datetime.datetime.min and not is_started:
         text += ui.TEXT_MAIN_NOT_STARTED
 
-    if (is_started and not is_ended) or (not start_time and not is_ended) or (not start_time and not end_time):
+    if (is_started != datetime.datetime.min and not is_ended) or (start_time == datetime.datetime.min and not is_ended) or (start_time == datetime.datetime.min and not end_time):
         text += ui.TEXT_MAIN_STARTED
 
-    if end_time and is_ended:
+    if end_time != datetime.datetime.min and is_ended:
         text += ui.TEXT_MAIN_ENDED
 
     await message.answer(text, reply_markup=ui.keyboard_main)

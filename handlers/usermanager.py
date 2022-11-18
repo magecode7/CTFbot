@@ -38,7 +38,7 @@ async def user_edit_handle(callback_query: types.CallbackQuery):
 
         await show_editable_user(callback_query.from_user.id)
     else:
-        await bot.send_message(callback_query.from_user.id, ui.TEXT_USER_MISSED, reply_markup=ui.keyboard_back)
+        await bot.send_message(callback_query.from_user.id, ui.TEXT_USER_MISSED, reply_markup=ui.keyboard_return)
 
 
 # Показ ввода изменения имени пользователя
@@ -46,7 +46,7 @@ async def user_edit_handle(callback_query: types.CallbackQuery):
 async def show_edit_user_name(message: types.Message):
     await BotStates.user_edit_name.set()
 
-    await message.answer(ui.TEXT_USER_NAME_EDIT, reply_markup=ui.keyboard_back)
+    await message.answer(ui.TEXT_USER_NAME_EDIT, reply_markup=ui.keyboard_return)
 
 
 # Перехватчик ввода изменения имени пользователя
@@ -65,7 +65,7 @@ async def enter_edit_user_name(message: types.Message):
 async def show_edit_user_rights(message: types.Message):
     await BotStates.user_edit_rights.set()
 
-    await message.answer(ui.TEXT_USER_RIGHTS_EDIT, reply_markup=ui.keyboard_back)
+    await message.answer(ui.TEXT_USER_RIGHTS_EDIT, reply_markup=ui.keyboard_return)
 
 
 # Перехватчик ввода изменения прав пользователя

@@ -21,7 +21,7 @@ async def show_editable_task(user_id: int):
         counter = 0
         for file in files:
             counter += 1
-            text += f'\n#{counter} ' + file[3]
+            text += f'\n#{counter} {file[3]}'
     else:
         text += ui.TEXT_TASK_FILES_MISSED
 
@@ -47,7 +47,7 @@ async def task_edit_handle(callback_query: types.CallbackQuery):
 
         await show_editable_task(callback_query.from_user.id)
     else:
-        await bot.send_message(callback_query.from_user.id, ui.TEXT_TASK_MISSED, reply_markup=ui.keyboard_back)
+        await bot.send_message(callback_query.from_user.id, ui.TEXT_TASK_MISSED, reply_markup=ui.keyboard_return)
 
 
 # Показ ввода изменения названия задания
@@ -55,7 +55,7 @@ async def task_edit_handle(callback_query: types.CallbackQuery):
 async def show_edit_task_name(message: types.Message):
     await BotStates.task_edit_name.set()
 
-    await message.answer(ui.TEXT_TASK_NAME_EDIT, reply_markup=ui.keyboard_back)
+    await message.answer(ui.TEXT_TASK_NAME_EDIT, reply_markup=ui.keyboard_return)
 
 
 # Перехватчик ввода изменения названия задания
@@ -78,7 +78,7 @@ async def enter_edit_task_name(message: types.Message):
 async def show_edit_task_desc(message: types.Message):
     await BotStates.task_edit_desc.set()
 
-    await message.answer(ui.TEXT_TASK_DESC_EDIT, reply_markup=ui.keyboard_back)
+    await message.answer(ui.TEXT_TASK_DESC_EDIT, reply_markup=ui.keyboard_return)
 
 
 # Перехватчик ввода изменения описания задания
@@ -101,7 +101,7 @@ async def enter_edit_task_desc(message: types.Message):
 async def show_edit_task_flag(message: types.Message):
     await BotStates.task_edit_flag.set()
 
-    await message.answer(ui.TEXT_TASK_FLAG_EDIT, reply_markup=ui.keyboard_back)
+    await message.answer(ui.TEXT_TASK_FLAG_EDIT, reply_markup=ui.keyboard_return)
 
 
 # Перехватчик ввода изменения флага задания
@@ -124,7 +124,7 @@ async def enter_edit_task_flag(message: types.Message):
 async def show_edit_task_points(message: types.Message):
     await BotStates.task_edit_points.set()
 
-    await message.answer(ui.TEXT_TASK_POINTS_EDIT, reply_markup=ui.keyboard_back)
+    await message.answer(ui.TEXT_TASK_POINTS_EDIT, reply_markup=ui.keyboard_return)
 
 
 # Перехватчик ввода изменения очков задания
@@ -181,7 +181,7 @@ async def file_add(message: types.Message):
 
     await BotStates.task_file_add.set()
 
-    await message.answer(ui.TEXT_TASK_FILE_ADD, reply_markup=ui.keyboard_back)
+    await message.answer(ui.TEXT_TASK_FILE_ADD, reply_markup=ui.keyboard_return)
 
 
 # Перехватчик файла

@@ -7,6 +7,7 @@ BUT_TASKS = 'Задания'
 BUT_SCOREBOARD = 'Рейтинг'
 BUT_HELP = 'Помощь'
 BUT_ADMIN_MENU = 'Админ-меню'
+BUT_RETURN = 'Вернуться'
 BUT_BACK = 'Назад'
 BUT_CANCEL = 'Отмена'
 # Кнопки админ-меню
@@ -35,6 +36,7 @@ BUT_USER_BLOCK_EDIT = 'Изменить блокировку'
 # Кнопки задания
 BUT_TASK_FLAG_ENTER = 'Ввести флаг'
 BUT_TASK_FILES = 'Прикрепленные файлы ({count})'
+BUT_TASK_SOLVES = 'Решения ({count})'
 # Кнопки профиля
 BUT_USER_NAME_CHANGE = 'Изменить имя'
 # Тексты меню
@@ -131,6 +133,8 @@ TEXT_TASK_FLAG_CHECK = 'Введите флаг:'
 TEXT_TASK_FLAG_CORRECT = 'Верно!'
 TEXT_TASK_FLAG_INCORRECT = 'Неверно!'
 TEXT_TASK_SOLVED = '\n\nЗадание уже решено'
+TEXT_TASK_SOLVES = 'РЕШИЛИ'
+TEXT_TASK_SOLVES_LINE = '\n#{num} {username}'
 # Тексты профиля
 TEXT_USER_PROFILE = 'ПРОФИЛЬ\nID пользователя: <code>{id}</code>\nИмя пользователя: {name}\nКоличество очков: {points}'
 TEXT_USER_NAME_CHANGE = 'Введите новое имя:'
@@ -166,12 +170,15 @@ keyboard_edit_task.row(*[BUT_TASK_NAME_EDIT, BUT_TASK_DESC_EDIT,
                        BUT_TASK_FLAG_EDIT, BUT_TASK_POINTS_EDIT])
 keyboard_edit_task.row(*[BUT_TASK_FILE_ADD, BUT_TASK_FILE_DELETE])
 keyboard_edit_task.row(*[BUT_TASK_RESET, BUT_TASK_DELETE])
-keyboard_edit_task.row(BUT_BACK)
+keyboard_edit_task.row(BUT_RETURN)
 
 keyboard_edit_user = types.ReplyKeyboardMarkup(resize_keyboard=True)
 keyboard_edit_user.row(BUT_USER_NAME_EDIT)
 keyboard_edit_user.row(*[BUT_USER_RIGHTS_EDIT, BUT_USER_BLOCK_EDIT])
-keyboard_edit_user.row(BUT_BACK)
+keyboard_edit_user.row(BUT_RETURN)
 
 keyboard_back = types.ReplyKeyboardMarkup(resize_keyboard=True)
 keyboard_back.add(*[BUT_BACK])
+
+keyboard_return = types.ReplyKeyboardMarkup(resize_keyboard=True)
+keyboard_return.add(*[BUT_RETURN])

@@ -11,7 +11,9 @@ from bot import BotStates, bot, dp
 
 
 # Админ панель
-@dp.message_handler(MinRightsFilter(1), commands='admin')
+@dp.message_handler(MinRightsFilter(1), commands='admin', state='*')
+@dp.message_handler(Text(equals=ui.BUT_ADMIN_MENU), MinRightsFilter(1), state='*')
+@dp.message_handler(Text(equals=ui.BUT_RETURN), MinRightsFilter(1), state='*')
 async def show_admin_panel(message: types.Message):
     if database.get_user_block(message.from_user.id):
         await message.answer(ui.TEXT_YOU_ARE_BLOCKED)
@@ -27,7 +29,7 @@ async def show_admin_panel(message: types.Message):
 async def show_add_task(message: types.Message):
     await BotStates.task_add_enter.set()
 
-    await message.answer(ui.TEXT_TASK_ADD, reply_markup=ui.keyboard_back)
+    await message.answer(ui.TEXT_TASK_ADD, reply_markup=ui.keyboard_return)
 
 
 # Перехватчик ввода названия нового задания
@@ -75,7 +77,7 @@ async def show_edit_users(message: types.Message):
 async def show_broadcast(message: types.Message):
     await BotStates.broadcast_enter.set()
 
-    await message.answer(ui.TEXT_BROADCAST_ENTER, reply_markup=ui.keyboard_back)
+    await message.answer(ui.TEXT_BROADCAST_ENTER, reply_markup=ui.keyboard_return)
 
 
 # Перехватчик ввода сообщения рассылки
@@ -101,7 +103,7 @@ async def broadcast_enter(message: types.Message):
 async def show_database_query(message: types.Message):
     await BotStates.database_query_enter.set()
 
-    await message.answer(ui.TEXT_QUERY_ENTER, reply_markup=ui.keyboard_back)
+    await message.answer(ui.TEXT_QUERY_ENTER, reply_markup=ui.keyboard_return)
 
 
 # Перехватчик ввода запроса в БД
@@ -127,7 +129,7 @@ async def show_reset(message: types.Message):
 async def show_time_start(message: types.Message):
     await BotStates.time_start_set.set()
 
-    await message.answer(ui.TEXT_TIME_START_SET)
+    await message.answer(ui.TEXT_TIME_START_SET, reply_markup=ui.keyboard_return)
 
 
 # Хендлер установки времени начала
@@ -140,7 +142,7 @@ async def time_start_set(message: types.Message):
 
         await BotStates.admin.set()
 
-        await message.answer(ui.TEXT_TIME_START_SETTED)
+        await message.answer(ui.TEXT_TIME_START_SETTED, reply_markup=ui.keyboard_admin)
     except Exception as e:
         await message.answer(ui.TEXT_TIME_SET_ERROR)
 
@@ -150,7 +152,7 @@ async def time_start_set(message: types.Message):
 async def show_time_end(message: types.Message):
     await BotStates.time_end_set.set()
 
-    await message.answer(ui.TEXT_TIME_END_SET)
+    await message.answer(ui.TEXT_TIME_END_SET, reply_markup=ui.keyboard_return)
 
 
 # Хендлер установки времени окончания
@@ -163,6 +165,6 @@ async def time_end_set(message: types.Message):
 
         await BotStates.admin.set()
 
-        await message.answer(ui.TEXT_TIME_END_SETTED)
+        await message.answer(ui.TEXT_TIME_END_SETTED, reply_markup=ui.keyboard_admin)
     except Exception as e:
         await message.answer(ui.TEXT_TIME_SET_ERROR)
