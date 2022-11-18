@@ -9,7 +9,12 @@ import database
 import ui
 
 # Логирование
-# logging.basicConfig(filename='bot.log', level=logging.DEBUG)
+logger = logging.getLogger('bot')
+logger.setLevel(logging.DEBUG)
+logger_handler = logging.FileHandler('bot.log')
+logger_formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+logger_handler.setFormatter(logger_formatter)
+logger.addHandler(logger_handler)
 # Хранилище состояний
 storage = MemoryStorage()
 # Бот токен
@@ -46,6 +51,8 @@ class BotStates(StatesGroup):
 
 # При включении
 async def on_startup(dp):
+    logger.debug('Bot started!')
+
     await bot.send_message(config.ADMIN, ui.TEXT_BOT_STARTUP)
 
 

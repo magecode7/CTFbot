@@ -9,7 +9,7 @@ import ui
 class StartTimeFilter(BoundFilter):
     async def check(self, message: types.Message) -> bool:
         start_time = database.get_start_time()
-        if not start_time:
+        if start_time == datetime.datetime.min:
             return True
 
         is_started = start_time < datetime.datetime.now()
@@ -23,7 +23,7 @@ class StartTimeFilter(BoundFilter):
 class EndTimeFilter(BoundFilter):
     async def check(self, message: types.Message) -> bool:
         end_time = database.get_end_time()
-        if not end_time:
+        if end_time == datetime.datetime.min:
             return True
 
         is_ended = end_time < datetime.datetime.now()

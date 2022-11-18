@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters import Text
 
 import database
 import ui
-from bot import BotStates, bot, dp
+from bot import BotStates, bot, dp, logger
 
 
 # Показ профиля
@@ -29,7 +29,7 @@ async def handle_profile_change_name(callback_query: types.CallbackQuery):
     await BotStates.user_change_name.set()
 
     await callback_query.answer()
-    await bot.send_message(callback_query.from_user.id, ui.TEXT_USER_NAME_CHANGE, reply_markup=types.ReplyKeyboardRemove())
+    await bot.send_message(callback_query.from_user.id, ui.TEXT_USER_NAME_CHANGE, reply_markup=ui.keyboard_back)
 
 
 # Хэндлер ввода нового имени
@@ -42,6 +42,8 @@ async def enter_edit_task_name(message: types.Message, state: FSMContext):
     await state.finish()
 
     database.set_user_name(message.from_user.id, message.text)
+
+    logger.info(f'User \"{message.from_user.full_name}\" ({message.from_user.id}) changed username to \"{message.text}\"')
 
     await message.answer(ui.TEXT_USER_NAME_CHANGED, reply_markup=ui.keyboard_main)
     await show_profile(message)

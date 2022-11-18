@@ -88,12 +88,20 @@ def get_task_flag(task_id: int) -> str:
     return str(cur.fetchone()[0])
 
 
-def get_task_solved(user_id: int, task_id: int) -> bool:
+def get_task_solved_by(user_id: int, task_id: int) -> bool:
     """Возвращает решенное задание"""
 
     cur.execute(
         "SELECT * FROM solves WHERE user_id = ? AND task_id = ?", (user_id, task_id))
     return cur.fetchone() is not None
+
+
+def get_task_solves(task_id: int) -> list:
+    """Возвращает решения задания"""
+
+    cur.execute(
+        "SELECT users.name as username FROM solves JOIN users ON users.id = solves.user_id WHERE solves.task_id = ? ", (task_id, ))
+    return cur.fetchall()
 
 
 def get_selected_task_id(user_id: int) -> int:
@@ -200,7 +208,8 @@ def get_scoreboard() -> list:
     cur.execute(
         """
         SELECT users.name AS username, SUM(tasks.points) AS score
-        FROM solves JOIN users ON users.id = solves.user_id
+        FROM solves
+        JOIN users ON users.id = solves.user_id
         JOIN tasks ON tasks.id = solves.task_id
         WHERE tasks.visible == 1 AND users.blocked == 0
         GROUP BY users.name
