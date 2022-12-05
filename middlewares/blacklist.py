@@ -36,9 +36,12 @@ class BlacklistMiddleware(BaseMiddleware):
         else:
             access = self.access
 
-        blocked = database.get_user_block(message.from_user.id)
+        user =  database.get_user(message.from_user.id)
 
-        if blocked and not access:
-            await message.answer(ui.TEXT_YOU_ARE_BLOCKED)
+        if user:
+            blocked = user['blocked']
 
-            raise CancelHandler()
+            if blocked and not access:
+                await message.answer(ui.TEXT_YOU_ARE_BLOCKED)
+
+                raise CancelHandler()
