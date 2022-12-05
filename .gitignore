@@ -1,6 +1,8 @@
 bot.log
 bot.db
 config.py
-__pycache__
-.vscode
-.venv
+*pycache*
+*vscode*
+*venv*
+*.service
+*.sh
