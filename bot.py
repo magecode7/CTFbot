@@ -1,4 +1,5 @@
 import logging
+import os
 
 from aiogram import Bot, Dispatcher, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -8,10 +9,15 @@ import config
 import database
 import ui
 
+LOG_PATH = 'logs'
+
 # Логирование
+if not os.path.exists(LOG_PATH):
+    os.makedirs(LOG_PATH)
+logging.basicConfig(filename=f'{LOG_PATH}/main.log', format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger('bot')
 logger.setLevel(logging.DEBUG)
-logger_handler = logging.FileHandler('bot.log')
+logger_handler = logging.FileHandler(f'{LOG_PATH}/bot.log')
 logger_formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 logger_handler.setFormatter(logger_formatter)
 logger.addHandler(logger_handler)
